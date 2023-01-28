@@ -38,9 +38,17 @@ public LogowanieGUI() {
                 ResultSet resultSet = statement.executeQuery(sql);
 
                 if (resultSet.next()) {
-                    dispose();
-                    ProjectGUI p1 = new ProjectGUI();
-                    p1.show();
+                    if (login.equals("admin") && haslo.equals("admin")) {
+                        dispose();
+                        ProjectGUI p1 = new ProjectGUI();
+                        p1.show();
+                    }
+                    else {
+                        dispose();
+                        UserGUI u1 = new UserGUI();
+                        u1.show();
+                    }
+
                 }
                 else {
                     JOptionPane.showMessageDialog(panel1, "Nieprawidlowe haslo lub login");

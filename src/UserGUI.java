@@ -9,55 +9,40 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-public class ProjectGUI extends JFrame {
+public class UserGUI extends JFrame {
     private String numberString = "";
     private double doZaplaty = 0;
     String kupujacy;
-
-
-    private JPanel mainPanel;
-    private JTabbedPane tabbedPane1;
-    private JButton dodajKlientaButton;
-    private JTable tabelaProduktow;
     private JTextField numberTextField;
     private JButton a7Button;
     private JButton a8Button;
     private JButton a9Button;
     private JButton a4Button;
-    private JButton a5Button;
     private JButton a6Button;
     private JButton a1Button;
     private JButton a2Button;
     private JButton a3Button;
-    private JTable tabelaKlientow;
+    private JButton a5Button;
     private JButton a0Button;
-    private JButton OKButton;
     private JButton cButton;
+    private JButton OKButton;
     private JTable tabelaKlientow2;
-    private JButton zatwierdzButton;
     private JTable tabelaProduktow2;
-    private JList koszykList;
+    private JButton zatwierdzButton;
     private JLabel kupujacyLabel;
+    private JList koszykList;
     private JLabel doZaplatyLabel;
     private JButton wyczyscButton;
-    private JTable tabelaFaktur;
-    private JTextField dodawanaNazwaKlientaTextField;
-    private JTextField dodawanyNipKlientaTextField;
-    private JTextField dodawanaNazwaProduktuTextField;
-    private JComboBox kategorieComboBox;
-    private JTextField dodawanaCenaProduktuTextField;
-    private JButton dodajProduktButton;
-    private JButton usuńProduktButton;
-    private JButton usunKlientaButton;
+    private JPanel mainUserGUIPanel;
 
     public static void main(String[] args) {
-        ProjectGUI p1 = new ProjectGUI();
-        p1.setVisible(true);
+        UserGUI u1 = new UserGUI();
+        u1.setVisible(true);
     }
 
-    public ProjectGUI() {
+    public UserGUI() {
         super("Project");
-        this.setContentPane(this.mainPanel);
+        this.setContentPane(this.mainUserGUIPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(800, 600);
 
@@ -70,7 +55,7 @@ public class ProjectGUI extends JFrame {
 
         doZaplatyLabel.setText("Do zapłaty:");
 
-        ButtonListener listener = new ButtonListener();
+        UserGUI.ButtonListener listener = new UserGUI.ButtonListener();
         a1Button.addActionListener(listener);
         a2Button.addActionListener(listener);
         a3Button.addActionListener(listener);
@@ -129,57 +114,7 @@ public class ProjectGUI extends JFrame {
                 updateInvoices(nazwaKlienta, koszyk, kwota);
                 createInvoiceList();
                 listModel.removeAllElements();
-                JOptionPane.showMessageDialog(null,"Transakcja przebiegła pomyślnie!");
-            }
-        });
-
-
-        dodajKlientaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String dodawanaNazwaKlienta = dodawanaNazwaKlientaTextField.getText();
-                String dodawanyNipKlienta = dodawanyNipKlientaTextField.getText();
-
-                updateClients(dodawanaNazwaKlienta, dodawanyNipKlienta);
-                createClientList();
-                JOptionPane.showMessageDialog(null,"Dodano nowego klienta!");
-            }
-        });
-
-        dodajProduktButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String dodawanaNazwaProduktu = dodawanaNazwaProduktuTextField.getText();
-                String dodawanaKategoriaProduktu = kategorieComboBox.getSelectedItem().toString();
-                double dodawanaCenaProduktu = Double.valueOf(dodawanaCenaProduktuTextField.getText());
-
-                updateProducts(dodawanaNazwaProduktu, dodawanaKategoriaProduktu, dodawanaCenaProduktu);
-                createProductList();
-                JOptionPane.showMessageDialog(null,"Dodano nowy produkt!");
-            }
-        });
-
-        usuńProduktButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int wybranyWiersz = tabelaProduktow.getSelectedRow();
-                String usuwanyKod = String.valueOf(tabelaProduktow.getModel().getValueAt(wybranyWiersz, 1));
-
-                deleteProduct(usuwanyKod);
-                createProductList();
-                JOptionPane.showMessageDialog(null,"Usunięto produkt!");
-            }
-        });
-
-        usunKlientaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int wybranyWiersz = tabelaKlientow.getSelectedRow();
-                String usuwaneId = String.valueOf(tabelaKlientow.getModel().getValueAt(wybranyWiersz,0));
-
-                deleteClient(usuwaneId);
-                createClientList();
-                JOptionPane.showMessageDialog(null,"Usunięto klienta!");
+                JOptionPane.showMessageDialog(null,"Transakcja przebiegła pomyślnie");
             }
         });
     }
@@ -261,7 +196,6 @@ public class ProjectGUI extends JFrame {
         }
 
         DefaultTableModel tableModel = new DefaultTableModel(rowData, col);
-        tabelaProduktow.setModel(tableModel);
         tabelaProduktow2.setModel(tableModel);
         return tableModel;
     }
@@ -284,7 +218,6 @@ public class ProjectGUI extends JFrame {
         }
 
         DefaultTableModel tableModel = new DefaultTableModel(rowData, col);
-        tabelaKlientow.setModel(tableModel);
         tabelaKlientow2.setModel(tableModel);
         return tableModel;
     }
@@ -308,7 +241,6 @@ public class ProjectGUI extends JFrame {
         }
 
         DefaultTableModel tableModel = new DefaultTableModel(rowData, col);
-        tabelaFaktur.setModel(tableModel);
         return tableModel;
     }
 
@@ -325,69 +257,4 @@ public class ProjectGUI extends JFrame {
             System.out.println(e);
         }
     }
-
-    public void updateClients(String strNazwa, String strNip) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
-            Statement statement = connection.createStatement();
-            String query = "insert into klienci" + " (`nazwa_klienta`,`nip_klienta`)"
-                    + "values('" +strNazwa+ "', '" +strNip+ "')";
-            statement.executeUpdate(query);
-            connection.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    public void updateProducts(String strNazwa, String strKategoria, double cena) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
-            Statement statement = connection.createStatement();
-            String query = "insert into produkty" + " (`nazwa`,`kategoria`, `cena`)"
-                    + "values('" +strNazwa+ "', '" +strKategoria+ "', '" +cena+"')";
-            statement.executeUpdate(query);
-            connection.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    public void deleteProduct(String kod) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
-            Statement statement = connection.createStatement();
-            String query = "delete from produkty where kod = " + kod;
-            statement.execute(query);
-            connection.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    public void deleteClient(String id) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
-            Statement statement = connection.createStatement();
-            String query = "delete from klienci where id_klienta = " + id;
-            statement.execute(query);
-            connection.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
 }
