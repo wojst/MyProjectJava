@@ -1,3 +1,5 @@
+package main;
+
 public class Klient {
     int id_klienta;
     String nazwa_klienta;

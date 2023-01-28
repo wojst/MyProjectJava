@@ -1,3 +1,5 @@
+package main;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
@@ -119,7 +121,7 @@ public class UserGUI extends JFrame {
         });
     }
 
-    private static String convertStrArraytoString(String[] strArr, String delimiter) {
+    public static String convertStrArraytoString(String[] strArr, String delimiter) {
         StringBuilder sb = new StringBuilder();
         for (String str : strArr) sb.append(str).append(delimiter);
         return sb.substring(0, sb.length() - 1);
