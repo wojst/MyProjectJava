@@ -4,23 +4,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ProjectGUI extends JFrame {
-
     private String numberString = "";
-
     private double doZaplaty = 0;
-
     String kupujacy;
-
 
 
     private JPanel mainPanel;
     private JTabbedPane tabbedPane1;
     private JButton dodajKlientaButton;
-    private JButton usunKlientaButton;
     private JTable tabelaProduktow;
     private JTextField numberTextField;
     private JButton a7Button;
@@ -40,10 +37,18 @@ public class ProjectGUI extends JFrame {
     private JButton zatwierdzButton;
     private JTable tabelaProduktow2;
     private JList koszykList;
-    private JTable tableFaktur;
     private JLabel kupujacyLabel;
     private JLabel doZaplatyLabel;
     private JButton wyczyscButton;
+    private JTable tabelaFaktur;
+    private JTextField dodawanaNazwaKlientaTextField;
+    private JTextField dodawanyNipKlientaTextField;
+    private JTextField dodawanaNazwaProduktuTextField;
+    private JComboBox kategorieComboBox;
+    private JTextField dodawanaCenaProduktuTextField;
+    private JButton dodajProduktButton;
+    private JButton usuńProduktButton;
+    private JButton usunKlientaButton;
 
     public static void main(String[] args) {
         ProjectGUI p1 = new ProjectGUI();
@@ -58,6 +63,7 @@ public class ProjectGUI extends JFrame {
 
         DefaultTableModel model1 = createProductList();
         DefaultTableModel model2 = createClientList();
+        DefaultTableModel model3 = createInvoiceList();
 
         DefaultListModel listModel = new DefaultListModel<>();
         koszykList.setModel(listModel);
@@ -77,7 +83,6 @@ public class ProjectGUI extends JFrame {
         a0Button.addActionListener(listener);
         cButton.addActionListener(listener);
 
-
         OKButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -92,7 +97,6 @@ public class ProjectGUI extends JFrame {
                 doZaplatyLabel.setText("Do zapłaty: " + String.valueOf(doZaplaty) + "zł");
             }
         });
-
 
         wyczyscButton.addActionListener(new ActionListener() {
             @Override
@@ -113,17 +117,74 @@ public class ProjectGUI extends JFrame {
         zatwierdzButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] koszykArray = new String[koszykList.getModel().getSize()];
+                String nazwaKlienta = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
+                String[] listaZakupow = new String[koszykList.getModel().getSize()];
+
                 for (int i = 0; i < koszykList.getModel().getSize(); i++) {
-                    koszykArray[i] = String.valueOf(koszykList.getModel().getElementAt(i));
+                    listaZakupow[i] = String.valueOf(koszykList.getModel().getElementAt(i));
                 }
-                Faktura faktura = new Faktura(kupujacy, koszykArray, doZaplaty);
+                String koszyk = convertStrArraytoString(listaZakupow, ",");
+                double kwota = Double.valueOf(doZaplaty);
+
+                updateInvoices(nazwaKlienta, koszyk, kwota);
+                createInvoiceList();
+            }
+        });
+
+
+        dodajKlientaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String dodawanaNazwaKlienta = dodawanaNazwaKlientaTextField.getText();
+                String dodawanyNipKlienta = dodawanyNipKlientaTextField.getText();
+
+                updateClients(dodawanaNazwaKlienta, dodawanyNipKlienta);
+                createClientList();
+            }
+        });
+
+        dodajProduktButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String dodawanaNazwaProduktu = dodawanaNazwaProduktuTextField.getText();
+                String dodawanaKategoriaProduktu = kategorieComboBox.getSelectedItem().toString();
+                double dodawanaCenaProduktu = Double.valueOf(dodawanaCenaProduktuTextField.getText());
+
+                updateProducts(dodawanaNazwaProduktu, dodawanaKategoriaProduktu, dodawanaCenaProduktu);
+                createProductList();
+            }
+        });
+
+        usuńProduktButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int wybranyWiersz = tabelaProduktow.getSelectedRow();
+                String usuwanyKod = String.valueOf(tabelaProduktow.getModel().getValueAt(wybranyWiersz, 1));
+
+                deleteProduct(usuwanyKod);
+                createProductList();
+            }
+        });
+
+        usunKlientaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int wybranyWiersz = tabelaKlientow.getSelectedRow();
+                String usuwaneId = String.valueOf(tabelaKlientow.getModel().getValueAt(wybranyWiersz,0));
+
+                deleteClient(usuwaneId);
+                createClientList();
             }
         });
     }
 
-    class ButtonListener implements ActionListener {
+    private static String convertStrArraytoString(String[] strArr, String delimiter) {
+        StringBuilder sb = new StringBuilder();
+        for (String str : strArr) sb.append(str).append(delimiter);
+        return sb.substring(0, sb.length() - 1);
+    }
 
+    class ButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == a1Button) {
@@ -183,7 +244,6 @@ public class ProjectGUI extends JFrame {
         col[1] = "Kod";
         col[2] = "Kategoria";
         col[3] = "Cena";
-//        col[4] = "Ilosc";
 
         String[][] rowData = new String[bazaProduktow.size()][4];
 
@@ -192,7 +252,6 @@ public class ProjectGUI extends JFrame {
             rowData[i][1] = String.valueOf(bazaProduktow.get(i).getKod());
             rowData[i][2] = bazaProduktow.get(i).getKategoria();
             rowData[i][3] = String.valueOf(bazaProduktow.get(i).getCena());
-//            rowData[i][4] = String.valueOf(bazaProduktow.get(i).getIlosc());
         }
 
         DefaultTableModel tableModel = new DefaultTableModel(rowData, col);
@@ -210,7 +269,7 @@ public class ProjectGUI extends JFrame {
         col[1] = "Nazwa";
         col[2] = "NIP";
 
-        String[][] rowData = new String[bazaKlientow.size()][5];
+        String[][] rowData = new String[bazaKlientow.size()][3];
 
         for (int i = 0; i < bazaKlientow.size(); i++) {
             rowData[i][0] = String.valueOf(bazaKlientow.get(i).getId_klienta());
@@ -224,17 +283,97 @@ public class ProjectGUI extends JFrame {
         return tableModel;
     }
 
-//    public DefaultTableModel createInvoiceList() {
-//        String[] col = new String[4];
-//        col[0] = "Nr faktury";
-//        col[1] = "Klient";
-//        col[2] = "Koszyk";
-//        col[3] = "Kwota";
-//
-//        DefaultTableModel tableModel = new DefaultTableModel();
-//        tableFaktur.setModel(tableModel);
-//        return tableModel;
-//    }
+    public DefaultTableModel createInvoiceList() {
+        BazaDanych baza = new BazaDanych("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+        ArrayList<Faktura> bazaFaktur = baza.getInvoicesList();
+
+        String[] col = new String[4];
+        col[0] = "Nr faktury";
+        col[1] = "Klient";
+        col[2] = "Koszyk";
+        col[3] = "Kwota";
+
+        String[][] rowData = new String[bazaFaktur.size()][4];
+        for (int i = 0; i < bazaFaktur.size(); i++) {
+            rowData[i][0] = String.valueOf(bazaFaktur.get(i).getNr_faktury());
+            rowData[i][1] = bazaFaktur.get(i).getKlient();
+            rowData[i][2] = bazaFaktur.get(i).getKoszykFaktura();
+            rowData[i][3] = String.valueOf(bazaFaktur.get(i).getNaleznosc());
+        }
+
+        DefaultTableModel tableModel = new DefaultTableModel(rowData, col);
+        tabelaFaktur.setModel(tableModel);
+        return tableModel;
+    }
+
+    public void updateInvoices(String strNazwaKlienta, String strKoszykFaktura, double kwota) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "insert into faktury" + " (`nazwa_klienta`,`koszyk`, `kwota`)"
+                    + "values('" +strNazwaKlienta+ "', '" +strKoszykFaktura+ "', '" +kwota+"')";
+            statement.executeUpdate(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void updateClients(String strNazwa, String strNip) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "insert into klienci" + " (`nazwa_klienta`,`nip_klienta`)"
+                    + "values('" +strNazwa+ "', '" +strNip+ "')";
+            statement.executeUpdate(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void updateProducts(String strNazwa, String strKategoria, double cena) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "insert into produkty" + " (`nazwa`,`kategoria`, `cena`)"
+                    + "values('" +strNazwa+ "', '" +strKategoria+ "', '" +cena+"')";
+            statement.executeUpdate(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void deleteProduct(String kod) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "delete from produkty where kod = " + kod;
+            statement.execute(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void deleteClient(String id) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "delete from klienci where id_klienta = " + id;
+            statement.execute(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
 
 
 

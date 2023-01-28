@@ -30,13 +30,11 @@ public class BazaDanych {
                 int kod = resultSet.getInt("kod");
                 String kategoria = resultSet.getString("kategoria");
                 Double cena = resultSet.getDouble("cena");
-//                int ilosc = resultSet.getInt("ilosc");
 
-                listaProduktow.add(new Produkt(nazwa, kod, kategoria, cena /*ilosc*/));
+                listaProduktow.add(new Produkt(nazwa, kod, kategoria, cena));
 
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
@@ -61,15 +59,14 @@ public class BazaDanych {
                 listaKlientow.add(new Klient(id_klienta, nazwa_klienta, nip_klienta));
 
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
         return listaKlientow;
     }
 
-    public ArrayList<Uzytkownik> getUsersist() {
+    public ArrayList<Uzytkownik> getUsersList() {
         ArrayList<Uzytkownik> listaUzytkownikow = new ArrayList<>();
 
         try {
@@ -87,11 +84,37 @@ public class BazaDanych {
                 listaUzytkownikow.add(new Uzytkownik(id_uzytkownika, nazwa_uzytkownika, haslo_uzytkownika));
 
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
         return listaUzytkownikow;
     }
+
+    public ArrayList<Faktura> getInvoicesList() {
+        ArrayList<Faktura> listaFaktur = new ArrayList<>();
+
+        try {
+            Class.forName(driver);
+            Connection connection = DriverManager.getConnection(url, username, password);
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("select * from faktury");
+
+            while (resultSet.next()) {
+                int nr_faktury = resultSet.getInt("nr_faktury");
+                String nazwa_klienta= resultSet.getString("nazwa_klienta");
+                String koszyk = resultSet.getString("koszyk");
+                double kwota = resultSet.getDouble("kwota");
+
+
+                listaFaktur.add(new Faktura(nr_faktury, nazwa_klienta, koszyk, kwota));
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return listaFaktur;
+    }
+
 }

@@ -3,7 +3,6 @@ public class Produkt {
     double cena;
     int kod;
     String kategoria;
-//    int ilosc;
 
     public Produkt(String nazwa, int kod, String kategoria, double cena/*, int ilosc*/) {
         this.nazwa = nazwa;
@@ -29,10 +28,6 @@ public class Produkt {
         return kategoria;
     }
 
-//    public int getIlosc() {
-//        return ilosc;
-//    }
-
     @Override
     public String toString() {
         return "Produkt{" +
@@ -40,7 +35,6 @@ public class Produkt {
                 ", cena=" + cena +
                 ", kod=" + kod +
                 ", kategoria='" + kategoria + '\'' +
-//                ", ilosc=" + ilosc +
                 '}' + "\n";
     }
 }
