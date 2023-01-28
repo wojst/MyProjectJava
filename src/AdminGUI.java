@@ -9,11 +9,10 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-public class ProjectGUI extends JFrame {
+public class AdminGUI extends JFrame {
     private String numberString = "";
     private double doZaplaty = 0;
-    String kupujacy;
-
+    private String kupujacy;
 
     private JPanel mainPanel;
     private JTabbedPane tabbedPane1;
@@ -47,16 +46,22 @@ public class ProjectGUI extends JFrame {
     private JComboBox kategorieComboBox;
     private JTextField dodawanaCenaProduktuTextField;
     private JButton dodajProduktButton;
-    private JButton usuńProduktButton;
+    private JButton usunProduktButton;
     private JButton usunKlientaButton;
+    private JTable tabelaUzytkownikow;
+    private JTextField loginTextField1;
+    private JTextField hasloTextField2;
+    private JButton dodajUzytkownikaButton;
+    private JButton usunUzytkownikaButton;
+    private JButton usunFaktureButton;
 
     public static void main(String[] args) {
-        ProjectGUI p1 = new ProjectGUI();
+        AdminGUI p1 = new AdminGUI();
         p1.setVisible(true);
     }
 
-    public ProjectGUI() {
-        super("Project");
+    public AdminGUI() {
+        super("AdminGUI");
         this.setContentPane(this.mainPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(800, 600);
@@ -64,6 +69,7 @@ public class ProjectGUI extends JFrame {
         DefaultTableModel model1 = createProductList();
         DefaultTableModel model2 = createClientList();
         DefaultTableModel model3 = createInvoiceList();
+        DefaultTableModel model4 = createUsersList();
 
         DefaultListModel listModel = new DefaultListModel<>();
         koszykList.setModel(listModel);
@@ -159,7 +165,19 @@ public class ProjectGUI extends JFrame {
             }
         });
 
-        usuńProduktButton.addActionListener(new ActionListener() {
+        dodajUzytkownikaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String login = loginTextField1.getText();
+                String haslo = hasloTextField2.getText();
+
+                updateUsers(login, haslo);
+                createUsersList();
+                JOptionPane.showMessageDialog(null, "Dodano nowego użytkownika!");
+            }
+        });
+
+        usunProduktButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int wybranyWiersz = tabelaProduktow.getSelectedRow();
@@ -180,6 +198,29 @@ public class ProjectGUI extends JFrame {
                 deleteClient(usuwaneId);
                 createClientList();
                 JOptionPane.showMessageDialog(null,"Usunięto klienta!");
+            }
+        });
+        usunFaktureButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int wybranyWiersz = tabelaFaktur.getSelectedRow();
+                String usuwanyNr = String.valueOf(tabelaFaktur.getModel().getValueAt(wybranyWiersz,0));
+
+                deleteInvoice(usuwanyNr);
+                createInvoiceList();
+                JOptionPane.showMessageDialog(null, "Usunięto fakturę!");
+            }
+        });
+
+        usunUzytkownikaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int wybranyWiersz = tabelaUzytkownikow.getSelectedRow();
+                String usuwaneID = String.valueOf(tabelaUzytkownikow.getModel().getValueAt(wybranyWiersz,0));
+
+                deleteUser(usuwaneID);
+                createUsersList();
+                JOptionPane.showMessageDialog(null, "Usunięto użytkownika!");
             }
         });
     }
@@ -312,6 +353,28 @@ public class ProjectGUI extends JFrame {
         return tableModel;
     }
 
+    public DefaultTableModel createUsersList() {
+        BazaDanych baza = new BazaDanych("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+        ArrayList<Uzytkownik> bazaUzytkownikow = baza.getUsersList();
+
+        String[] col = new String[3];
+        col[0] = "ID uzytkownika";
+        col[1] = "Login";
+        col[2] = "Hasło";
+
+        String[][] rowData = new String[bazaUzytkownikow.size()][3];
+
+        for (int i = 0; i < bazaUzytkownikow.size(); i++) {
+            rowData[i][0] = String.valueOf(bazaUzytkownikow.get(i).getId_uzytkownika());
+            rowData[i][1] = bazaUzytkownikow.get(i).getLogin();
+            rowData[i][2] = bazaUzytkownikow.get(i).getHaslo();
+        }
+
+        DefaultTableModel tableModel = new DefaultTableModel(rowData, col);
+        tabelaUzytkownikow.setModel(tableModel);
+        return tableModel;
+    }
+
     public void updateInvoices(String strNazwaKlienta, String strKoszykFaktura, double kwota) {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -354,6 +417,20 @@ public class ProjectGUI extends JFrame {
         }
     }
 
+    public void updateUsers(String strLogin, String strHaslo) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "insert into uzytkownicy" + " (`nazwa_uzytkownika`,`haslo_uzytkownika`)"
+                    + "values('" +strLogin+ "', '" +strHaslo+ "')";
+            statement.executeUpdate(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
     public void deleteProduct(String kod) {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -373,6 +450,32 @@ public class ProjectGUI extends JFrame {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
             Statement statement = connection.createStatement();
             String query = "delete from klienci where id_klienta = " + id;
+            statement.execute(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void deleteInvoice(String nr) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "delete from faktury where nr_faktury = " + nr;
+            statement.execute(query);
+            connection.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void deleteUser(String id) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
+            Statement statement = connection.createStatement();
+            String query = "delete from uzytkownicy where id_uzytkownika = " + id;
             statement.execute(query);
             connection.close();
         } catch (Exception e) {

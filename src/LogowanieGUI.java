@@ -40,7 +40,7 @@ public LogowanieGUI() {
                 if (resultSet.next()) {
                     if (login.equals("admin") && haslo.equals("admin")) {
                         dispose();
-                        ProjectGUI p1 = new ProjectGUI();
+                        AdminGUI p1 = new AdminGUI();
                         p1.show();
                     }
                     else {

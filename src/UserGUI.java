@@ -41,7 +41,7 @@ public class UserGUI extends JFrame {
     }
 
     public UserGUI() {
-        super("Project");
+        super("UserGUI");
         this.setContentPane(this.mainUserGUIPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(800, 600);
