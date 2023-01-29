@@ -125,7 +125,11 @@ public class AdminGUI extends JFrame {
         zatwierdzButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nazwaKlienta = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
+                String nazwaKlienta;
+                if (!tabelaKlientow2.isRowSelected(tabelaKlientow2.getSelectedRow())) {
+                    nazwaKlienta = "";
+                }
+                else nazwaKlienta = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
                 String[] listaZakupow = new String[koszykList.getModel().getSize()];
 
                 for (int i = 0; i < koszykList.getModel().getSize(); i++) {

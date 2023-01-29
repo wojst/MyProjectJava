@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class UserGUI extends JFrame {
     private String numberString = "";
     private double doZaplaty = 0;
-    String kupujacy;
+    String kupujacy = "";
     private JTextField numberTextField;
     private JButton a7Button;
     private JButton a8Button;
@@ -36,6 +36,7 @@ public class UserGUI extends JFrame {
     private JLabel doZaplatyLabel;
     private JButton wyczyscButton;
     private JPanel mainUserGUIPanel;
+    private JTextPane nieMaCięNaTextPane;
 
     public static void main(String[] args) {
         UserGUI u1 = new UserGUI();
@@ -104,7 +105,11 @@ public class UserGUI extends JFrame {
         zatwierdzButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nazwaKlienta = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
+                String nazwaKlienta;
+                if (!tabelaKlientow2.isRowSelected(tabelaKlientow2.getSelectedRow())) {
+                    nazwaKlienta = "";
+                }
+                else nazwaKlienta = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
                 String[] listaZakupow = new String[koszykList.getModel().getSize()];
 
                 for (int i = 0; i < koszykList.getModel().getSize(); i++) {
