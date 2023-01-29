@@ -37,6 +37,7 @@ public class UserGUI extends JFrame {
     private JButton wyczyscButton;
     private JPanel mainUserGUIPanel;
     private JTextPane nieMaCięNaTextPane;
+    private JButton brakButton;
 
     public static void main(String[] args) {
         UserGUI u1 = new UserGUI();
@@ -99,6 +100,14 @@ public class UserGUI extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 kupujacy = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
                 kupujacyLabel.setText("Kupujący: " + kupujacy);
+            }
+        });
+
+        brakButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabelaKlientow2.clearSelection();
+                kupujacyLabel.setText("Kupujacy:");
             }
         });
 

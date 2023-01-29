@@ -56,6 +56,7 @@ public class AdminGUI extends JFrame {
     private JButton dodajUzytkownikaButton;
     private JButton usunUzytkownikaButton;
     private JButton usunFaktureButton;
+    private JButton brakButton;
 
     public static void main(String[] args) {
         AdminGUI p1 = new AdminGUI();
@@ -119,6 +120,14 @@ public class AdminGUI extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 kupujacy = tabelaKlientow2.getValueAt(tabelaKlientow2.getSelectedRow(),1).toString();
                 kupujacyLabel.setText("Kupujący: " + kupujacy);
+            }
+        });
+
+        brakButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabelaKlientow2.clearSelection();
+                kupujacyLabel.setText("Kupujacy:");
             }
         });
 
@@ -206,6 +215,7 @@ public class AdminGUI extends JFrame {
                 JOptionPane.showMessageDialog(null,"Usunięto klienta!");
             }
         });
+
         usunFaktureButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -287,7 +297,6 @@ public class AdminGUI extends JFrame {
         }
     }
 
-
     public DefaultTableModel createProductList() {
         BazaDanych baza = new BazaDanych("jdbc:mysql://localhost:3306/jdbcdatabase", "root", "");
         ArrayList<Produkt> bazaProduktow = baza.getProductList();
@@ -299,7 +308,6 @@ public class AdminGUI extends JFrame {
         col[3] = "Cena";
 
         String[][] rowData = new String[bazaProduktow.size()][4];
-
         for (int i = 0; i < bazaProduktow.size(); i++) {
             rowData[i][0] = bazaProduktow.get(i).getNazwa();
             rowData[i][1] = String.valueOf(bazaProduktow.get(i).getKod());
@@ -323,7 +331,6 @@ public class AdminGUI extends JFrame {
         col[2] = "NIP";
 
         String[][] rowData = new String[bazaKlientow.size()][3];
-
         for (int i = 0; i < bazaKlientow.size(); i++) {
             rowData[i][0] = String.valueOf(bazaKlientow.get(i).getId_klienta());
             rowData[i][1] = bazaKlientow.get(i).getNazwa_klienta();
@@ -369,7 +376,6 @@ public class AdminGUI extends JFrame {
         col[2] = "Hasło";
 
         String[][] rowData = new String[bazaUzytkownikow.size()][3];
-
         for (int i = 0; i < bazaUzytkownikow.size(); i++) {
             rowData[i][0] = String.valueOf(bazaUzytkownikow.get(i).getId_uzytkownika());
             rowData[i][1] = bazaUzytkownikow.get(i).getLogin();
@@ -488,15 +494,5 @@ public class AdminGUI extends JFrame {
             System.out.println(e);
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 }
